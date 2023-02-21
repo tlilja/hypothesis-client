@@ -154,6 +154,7 @@ export class TextPosition {
     try {
       return resolveOffsets(this.element, this.offset)[0];
     } catch (err) {
+      console.log('LOG resolve:createTreeWalker()');
       if (this.offset === 0 && options.direction !== undefined) {
         const tw = document.createTreeWalker(
           this.element.getRootNode(),
@@ -268,6 +269,7 @@ export class TextRange {
    * May throw if the `start` or `end` positions cannot be resolved to a range.
    */
   toRange(): Range {
+    console.log('LOG toRange()')
     let start;
     let end;
 
@@ -281,11 +283,13 @@ export class TextRange {
         this.start.offset,
         this.end.offset
       );
+      console.log('LOG resolveOffsets')
     } else {
       start = this.start.resolve({
         direction: ResolveDirection.FORWARDS,
       });
       end = this.end.resolve({ direction: ResolveDirection.BACKWARDS });
+      console.log('LOG resolve.start and end')
     }
 
     const range = new Range();

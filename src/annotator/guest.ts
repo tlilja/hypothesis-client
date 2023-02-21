@@ -516,6 +516,7 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
         !target.selector ||
         !target.selector.some(s => s.type === 'TextQuoteSelector')
       ) {
+        console.log('LOG locate:TextQuoteSelector')
         return { annotation, target };
       }
 
@@ -525,15 +526,20 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
           this.element,
           target.selector
         );
+        console.log(`LOG locate: ${range}`)
+
         // Convert the `Range` to a `TextRange` which can be converted back to
         // a `Range` later. The `TextRange` representation allows for highlights
         // to be inserted during anchoring other annotations without "breaking"
         // this anchor.
         const textRange = TextRange.fromRange(range);
+        console.log(`LOG locate:TextRange ${textRange}`)
+
         anchor = { annotation, target, range: textRange };
       } catch (err) {
         anchor = { annotation, target };
       }
+
       return anchor;
     };
 
@@ -545,7 +551,8 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
       if (!range) {
         return;
       }
-
+      console.log(`anchor=${JSON.stringify(anchor)}`)
+      console.log(`LOG highlight:range="${range}"`)
       const highlights = highlightRange(
         range,
         anchor.annotation?.$cluster /* cssClass */
@@ -560,6 +567,8 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
       }
     };
 
+    console.log('LOG anchor start ***')
+    console.log(`LOG annotation..exact="${annotation.target[0].selector[2].exact}"`)
     // Remove existing anchors for this annotation.
     this.detach(annotation.$tag, false /* notify */);
 
@@ -570,7 +579,6 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
       annotation.target = [];
     }
     const anchors = await Promise.all(annotation.target.map(locate));
-
     // If the annotation was removed while anchoring, don't save the anchors.
     if (!this._annotations.has(annotation.$tag)) {
       return [];
@@ -591,6 +599,8 @@ export class Guest extends TinyEmitter implements Annotator, Destroyable {
 
     // Let other frames (eg. the sidebar) know about the new annotation.
     this._sidebarRPC.call('syncAnchoringStatus', annotation);
+
+    console.log('LOG anchor end ***')
 
     return anchors;
   }
